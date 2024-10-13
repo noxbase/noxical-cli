@@ -1,0 +1,89 @@
+name: Build Multi-Target
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Grant write permissions to repository contents (needed for releases)
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - target: "x86_64-unknown-linux-gnu"
+            os: "ubuntu-latest"
+          - target: "x86_64-pc-windows-msvc"
+            os: "windows-latest"
+          - target: "x86_64-apple-darwin"
+            os: "macos-latest"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use nightly version
+        run: rustup default nightly
+
+      - name: Install Target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Build Target
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: List Build Artifacts (Debug Step)
+        run: ls -R target/${{ matrix.target }}/release/
+
+      - name: Archive Build
+        if: success()
+        run: |
+          mkdir -p artifacts
+          if [ "${{ matrix.target }}" == "x86_64-pc-windows-msvc" ]; then
+            # Fix: Use forward slashes instead of backslashes for paths
+            cp target/${{ matrix.target }}/release/noxical.exe artifacts/noxical_${{ matrix.target }}.exe
+          else
+            cp target/${{ matrix.target }}/release/noxical artifacts/noxical_${{ matrix.target }}
+            chmod +x artifacts/noxical_${{ matrix.target }}
+          fi
+        # By default, windows will use PowerShell so force the usage of bash
+        shell: bash
+
+      - name: Upload Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: noxical_${{ matrix.target }}
+          path: artifacts/noxical_*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history so git tags and other git data are available
+          fetch-depth: 0
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # Download all artifacts to the 'artifacts' folder
+          path: artifacts
+
+      - name: Create GitHub Release with CLI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="v1.0.${{ github.run_number }}"
+          # Find all files in the artifacts directory and upload them one by one
+          for file in artifacts/*; do
+            if [ -f "$file" ]; then
+              gh release create $TAG_NAME "$file" --title "Release $TAG_NAME" --notes "Automated release for $TAG_NAME"
+            fi
+          done
