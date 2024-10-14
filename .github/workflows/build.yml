@@ -1,4 +1,4 @@
-name: Build Multi-Target
+name: Build Multi-Target for Noxical CLI
 
 on:
   push:
