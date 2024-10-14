@@ -1,11 +1,13 @@
 name: Build Multi-Target for Noxical CLI tool
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
+
+on: [push]
 
 # Grant write permissions to repository contents (needed for releases)ff
 permissions:
