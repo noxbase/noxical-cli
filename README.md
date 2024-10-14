@@ -1,6 +1,6 @@
 # CLI tools for Noxical
 
-TEST
+TEST!
 
 1. Compile the Rust program:
 
