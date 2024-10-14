@@ -50,7 +50,7 @@ jobs:
             cp target/${{ matrix.target }}/release/noxical artifacts/noxical_${{ matrix.target }}
             chmod +x artifacts/noxical_${{ matrix.target }}
           fi
-        # By default, windows will use PowerShell so force the usage of bash
+        # By default, Windows will use PowerShell so force the usage of bash
         shell: bash
 
       - name: Upload Artifact
