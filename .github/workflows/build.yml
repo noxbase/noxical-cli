@@ -84,6 +84,6 @@ jobs:
           # Find all files in the artifacts directory and upload them one by one
           for file in artifacts/*; do
             if [ -f "$file" ]; then
-              gh release create $TAG_NAME "$file" --title "Release $TAG_NAME" --notes "Automated release for $TAG_NAME"
+              gh release create $TAG_NAME "$file" --title "Release $TAG_NAME" --notes "Automated release for $TAG_NAME" --generate-notes
             fi
           done
