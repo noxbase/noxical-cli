@@ -1,5 +1,7 @@
 # CLI tools for Noxical
 
+test
+
 1. Compile the Rust program:
 
 ```bash
